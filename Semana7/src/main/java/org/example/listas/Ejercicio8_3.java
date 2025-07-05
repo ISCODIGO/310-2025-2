@@ -9,7 +9,7 @@ public class Ejercicio8_3 {
         for(double x = 0; x <= 5.0; x+= 0.5) {
             double y = 0;
             for (int i = 0; i < p.cantidad(); i++) {
-                Termino t = p.getDato(i);
+                Termino t = p.getDato(i);  // O(n^2) ya que solo getDato es O(n)
                 y += t.coeficiente * Math.pow(x, t.exponente);
             }
             System.out.println(String.format("Y(%.1f) = %.2f", x, y));
