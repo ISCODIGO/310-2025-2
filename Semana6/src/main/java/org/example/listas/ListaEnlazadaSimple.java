@@ -1,11 +1,11 @@
 package org.example.listas;
 
-public class ListaEnlazadaSimple implements Lista {
-    class Nodo {
-        int dato;
-        Nodo sig;
+public class ListaEnlazadaSimple<T> implements Lista<T> {
+    static class Nodo<T> {
+        T dato;
+        Nodo<T> sig;
 
-        public Nodo(int dato) {
+        public Nodo(T dato) {
             this.dato = dato;
             this.sig = null;
         }
@@ -13,8 +13,8 @@ public class ListaEnlazadaSimple implements Lista {
 
     // atributos
     private int cantidad;
-    private Nodo primero;
-    private Nodo ultimo;
+    private Nodo<T> primero;
+    private Nodo<T> ultimo;
 
     public ListaEnlazadaSimple() {
         crear();
@@ -28,67 +28,116 @@ public class ListaEnlazadaSimple implements Lista {
         ultimo = null;
     }
 
-    private void crearPrimerNodo(Nodo nodo) {
+    private void crearPrimerNodo(Nodo<T> nodo) {
         primero = nodo;
         ultimo = nodo;
     }
 
     @Override
-    public void agregar(int dato) {
-        // Agregar el nodo al final de la lista
-        var nuevo = new Nodo(dato);
+    // Nuevo método para agregar cualquier tipo de dato
+    public void agregar(T dato) {
+        var nuevo = new Nodo<>(dato);
         if (this.estaVacia()) {
             crearPrimerNodo(nuevo);
-        }
-        else {
-           ultimo.sig = nuevo;
-           ultimo = nuevo;
+        } else {
+            ultimo.sig = nuevo;
+            ultimo = nuevo;
         }
         cantidad++;
     }
 
     @Override
-    public void insertar(int posicion, int dato) {
-        if (this.estaVacia()) {
-            // se debe crear el primer nodo
+    // Nuevo método para insertar cualquier tipo de dato
+    public void insertar(int posicion, T dato) {
+        if (posicion < 0 || posicion > cantidad) {
+            throw new IndexOutOfBoundsException();
         }
+        var nuevo = new Nodo<>(dato);
+        if (posicion == 0) {
+            nuevo.sig = primero;
+            primero = nuevo;
+            if (cantidad == 0) {
+                ultimo = nuevo;
+            }
+        } else if (posicion == cantidad) {
+            if (ultimo != null) {
+                ultimo.sig = nuevo;
+            }
+            ultimo = nuevo;
+            if (cantidad == 0) {
+                primero = nuevo;
+            }
+        } else {
+            Nodo<T> previo = get(posicion - 1);
+            nuevo.sig = previo.sig;
+            previo.sig = nuevo;
+        }
+        cantidad++;
     }
 
     @Override
-    public void remover(int dato) {
-        // obtener la posicion
-        int posicion = buscar(dato);  // O(n)
-        removerPorPosicion(posicion);  // O(n)
+    // Nuevo método para remover cualquier tipo de dato
+    public void remover(T dato) {
+        if (estaVacia()) return;
 
+        Nodo<T> actual = primero;
+        Nodo<T> previo = null;
+        int pos = 0;
+        while (actual != null) {
+            if (actual.dato.equals(dato)) {
+                if (previo == null) {
+                    removerPrimero();
+                } else if (actual == ultimo) {
+                    removerUltimo();
+                } else {
+                    previo.sig = actual.sig;
+                    cantidad--;
+                }
+                return;
+            }
+            previo = actual;
+            actual = actual.sig;
+            pos++;
+        }
     }
 
     private void removerPrimero() {
-        primero = primero.sig;
+        if (primero != null) {
+            primero = primero.sig;
+            cantidad--;
+            if (primero == null) {
+                ultimo = null;
+            }
+        }
     }
 
     private void removerUltimo() {
-        Nodo aux = primero;
-
+        if (primero == null) return;
+        if (primero == ultimo) {
+            primero = null;
+            ultimo = null;
+            cantidad = 0;
+            return;
+        }
+        Nodo<T> aux = primero;
         while (aux.sig != ultimo) {
             aux = aux.sig;
         }
-
         ultimo = aux;
         aux.sig = null;
+        cantidad--;
     }
 
-    private Nodo get(int posicion) {
+    private Nodo<T> get(int posicion) {
         if (posicion < 0 || posicion >= cantidad) {
             throw new IndexOutOfBoundsException();
         }
-
-        Nodo aux = primero;
+        Nodo<T> aux = primero;
         int p = 0;
-        while(p < posicion) {
+        while (p < posicion) {
             p++;
             aux = aux.sig;
         }
-
         return aux;
     }
 
@@ -97,19 +146,15 @@ public class ListaEnlazadaSimple implements Lista {
         if (posicion < 0 || posicion >= cantidad) {
             throw new IndexOutOfBoundsException();
         }
-
         if (cantidad == 1) {
             limpiar();
-        } else{
-            if (posicion == 0) {
-                removerPrimero();
-            } else if (posicion == cantidad - 1) {
-                removerUltimo();
-            } else {
-                // Encontrar el previo
-                Nodo previo = get(posicion - 1);
-                previo.sig = previo.sig.sig;
-            }
+        } else if (posicion == 0) {
+            removerPrimero();
+        } else if (posicion == cantidad - 1) {
+            removerUltimo();
+        } else {
+            Nodo<T> previo = get(posicion - 1);
+            previo.sig = previo.sig.sig;
             cantidad--;
         }
     }
@@ -121,24 +166,29 @@ public class ListaEnlazadaSimple implements Lista {
     }
 
     @Override
-    public int buscar(int dato) {
-        if (dato == ultimo.dato) {
-            return cantidad - 1;
-        }
-
+    // Nuevo método para buscar cualquier tipo de dato
+    public int buscar(T dato) {
         int indice = 0;
-        for(Nodo aux = primero; aux != ultimo; aux = aux.sig, indice++) {
-            if (aux.dato == dato) {
-                 return indice;
+        for (Nodo<T> aux = primero; aux != null; aux = aux.sig, indice++) {
+            if (aux.dato.equals(dato)) {
+                return indice;
             }
         }
-
         return -1;
     }
 
     @Override
     public void imprimir() {
-
+        Nodo<T> aux = primero;
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        while (aux != null) {
+            sb.append(aux.dato);
+            if (aux.sig != null) sb.append(" -> ");
+            aux = aux.sig;
+        }
+        sb.append("]");
+        System.out.println(sb.toString());
     }
 
     @Override
@@ -147,63 +197,19 @@ public class ListaEnlazadaSimple implements Lista {
     }
 
     @Override
-    public int primero() {
-        return this.primero.dato;
+    public T primero() {
+        if (primero == null) throw new IllegalStateException("Lista vacía");
+        return primero.dato;
     }
 
     @Override
-    public int ultimo() {
-        return this.ultimo.dato;
+    public T ultimo() {
+        if (ultimo == null) throw new IllegalStateException("Lista vacía");
+        return ultimo.dato;
     }
 
     @Override
     public int cantidad() {
         return this.cantidad;
-    }
-
-    public static void main(String[] args) {
-        ListaEnlazadaSimple enlazadaSimple = new ListaEnlazadaSimple();
-        enlazadaSimple.agregar(10);
-
-        // pruebas del funcionamiento de los metodos
-        System.out.println(1 == enlazadaSimple.cantidad());
-        System.out.println(10 == enlazadaSimple.primero());
-        System.out.println(10 == enlazadaSimple.ultimo());
-
-        enlazadaSimple.agregar(20);  // 10 -> 20
-        System.out.println(2 == enlazadaSimple.cantidad());
-        System.out.println(10 == enlazadaSimple.primero());
-        System.out.println(20 == enlazadaSimple.ultimo());
-
-        enlazadaSimple.removerPorPosicion(1);
-        System.out.println(1 == enlazadaSimple.cantidad());
-        System.out.println(10 == enlazadaSimple.primero());
-        System.out.println(10 == enlazadaSimple.ultimo());
-
-        enlazadaSimple.agregar(20);
-        enlazadaSimple.removerPorPosicion(0);
-        System.out.println(1 == enlazadaSimple.cantidad());
-        System.out.println(20 == enlazadaSimple.primero());
-        System.out.println(20 == enlazadaSimple.ultimo());
-
-        enlazadaSimple.agregar(30);
-        enlazadaSimple.agregar(40);  // 20 -> 30 -> 40
-        enlazadaSimple.removerPorPosicion(1);
-        System.out.println(2 == enlazadaSimple.cantidad());
-        System.out.println(20 == enlazadaSimple.primero());
-        System.out.println(40 == enlazadaSimple.ultimo());
-        System.out.println(40 == enlazadaSimple.primero.sig.dato);
-
-        enlazadaSimple.agregar(50);
-        // 20 -> 40 -> 50
-        System.out.println(0 == enlazadaSimple.buscar(20));
-        System.out.println(1 == enlazadaSimple.buscar(40));
-        System.out.println(2 == enlazadaSimple.buscar(50));
-
-        System.out.println("Actual...");
-        enlazadaSimple.remover(40);
-        System.out.println(2 == enlazadaSimple.cantidad());
-        System.out.println(20 == enlazadaSimple.primero());
-        System.out.println(50 == enlazadaSimple.ultimo());
     }
 }

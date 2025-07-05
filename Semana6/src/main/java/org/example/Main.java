@@ -36,5 +36,50 @@ public class Main {
         // O(n+n+m) -> O(n+m)  n >= m -> O(n) // n < m -> O(m)
 
         System.out.println(Arrays.toString(resultado));
+
+        // --- Pruebas para ListaEnlazadaSimple ---
+        org.example.listas.ListaEnlazadaSimple<Integer> enlazadaSimple = new org.example.listas.ListaEnlazadaSimple<>();
+        enlazadaSimple.agregar(10);
+
+        // pruebas del funcionamiento de los metodos
+        System.out.println(1 == enlazadaSimple.cantidad());
+        System.out.println(10 == enlazadaSimple.primero());
+        System.out.println(10 == enlazadaSimple.ultimo());
+
+        enlazadaSimple.agregar(20);  // 10 -> 20
+        System.out.println(2 == enlazadaSimple.cantidad());
+        System.out.println(10 == enlazadaSimple.primero());
+        System.out.println(20 == enlazadaSimple.ultimo());
+
+        enlazadaSimple.removerPorPosicion(1);
+        System.out.println(1 == enlazadaSimple.cantidad());
+        System.out.println(10 == enlazadaSimple.primero());
+        System.out.println(10 == enlazadaSimple.ultimo());
+
+        enlazadaSimple.agregar(20);
+        enlazadaSimple.removerPorPosicion(0);
+        System.out.println(1 == enlazadaSimple.cantidad());
+        System.out.println(20 == enlazadaSimple.primero());
+        System.out.println(20 == enlazadaSimple.ultimo());
+
+        enlazadaSimple.agregar(30);
+        enlazadaSimple.agregar(40);  // 20 -> 30 -> 40
+        enlazadaSimple.removerPorPosicion(1);
+        System.out.println(2 == enlazadaSimple.cantidad());
+        System.out.println(20 == enlazadaSimple.primero());
+        System.out.println(40 == enlazadaSimple.ultimo());
+        System.out.println("Actual...");
+        System.out.println(1 == enlazadaSimple.buscar(40));
+
+        enlazadaSimple.agregar(50);
+        // 20 -> 40 -> 50
+        System.out.println(0 == enlazadaSimple.buscar(20));
+        System.out.println(1 == enlazadaSimple.buscar(40));
+        System.out.println(2 == enlazadaSimple.buscar(50));
+
+        enlazadaSimple.remover(40);
+        System.out.println(2 == enlazadaSimple.cantidad());
+        System.out.println(20 == enlazadaSimple.primero());
+        System.out.println(50 == enlazadaSimple.ultimo());
     }
 }
